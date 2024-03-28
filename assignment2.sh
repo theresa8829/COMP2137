@@ -12,8 +12,8 @@ server1address=192.168.16.21/24
 # 1. This section of code is to change netplan configuration
 	# This section of code is to update /etc/hosts file
 	echo "Adding server1 to /etc/hosts file if necessary..."
-	sudo sed -i "$server1address server1" /etc/hosts 
-	# *** TODO: Pretty up with output
+	sudo sed -i "$server1address server1" /etc/hosts
+	
 	
 	# Apply new configurations
 	sudo netplan apply
@@ -48,11 +48,41 @@ server1address=192.168.16.21/24
 	sudo systemctl status ufw verbose
 
 # 4. This section of code is to create the required user accounts with the required configurations
-	# Creating user dennis with home directory, bash login shell, and sudo access
-	# *** TODO: Need to make this user two sets of keys, with both public keys saved to it's own authorized_keys file
-	# *** TODO: Need to add 
+# *** TODO: Need to make this user two sets of keys, with both public keys saved to it's own authorized_keys file
+	# Creating user dennis with home directory and bash login shell as default
 	useradd -m -s /bin/bash dennis
+	# Give user dennis sudo permissions
 	usermod -aG sudo dennis
+	echo "User dennis has been granted sudo access."
+	# SSH access with given public key:
+	given_pubkey="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG4rT3vTt99Ox5kndS4HmgTrKBT8SKzhK4rhGkEVGlCI student@generic-vm"
+	# Make ssh directory for user dennis
+	sudo mkdir -p /home/dennis/.ssh
+	# Set permissions for .ssh directory
+	sudo chmod 700 /home/dennis/.ssh
+	# Copy the given public key to dennis authorized_keys file
+	echo "$given_pubkey" >> /home/dennis/.ssh/authorized_keys
+	# Set permissions for authorized_keys
+	sudo chmod 600 /home/dennis/.ssh/authorized_keys
+	# Set ownership of .ssh directory and authorized_keys file
+	sudo chown -R dennis:dennis /home/dennis/.ssh
+	echo "SSH access has been configured for user dennis!"
+	
+	# Generate rsa and ed25519 keys for user dennis, append both public keys to dennis authorized_keys file
+		# Generate RSA key pair
+			if [ ! -f "/home/dennis/.ssh/id_rsa" ]; then
+				sudo -i -u dennis ssh-keygen -t rsa -N "" -f "/home/dennis/.ssh/id_rsa"
+			fi
+			
+			# Generate ed25519 key pair
+			if [ ! -f "/home/dennis/.ssh/id_ed25519" ]; then
+				sudo -i -u dennis ssh-keygen -t ed25519 -N "" -f "/home/dennis/.ssh/ed25519"
+			fi
+			
+			# Appending public keys to each user authorized_keys file
+			cat "/home/dennis/.ssh/id_rsa.pub" | sudo -u dennis tee -a "/home/dennis/.ssh/authorized_keys" >/dev/null
+			cat "/home/dennis/.ssh/id_ed25519.pub" | sudo -u dennis tee -a "/home/dennis/.ssh/authorized_keys" >/dev/null
+	
 
 	# Creating rest of users with home directory, bash login shell
 	# User accounts to create
@@ -83,11 +113,9 @@ server1address=192.168.16.21/24
 				sudo -i -u "$users" ssh-keygen -t ed25519 -N "" -f "/home/$users/.ssh/ed25519"
 			fi
 			
-			# Appending public keys to authorized_keys file
+			# Appending public keys to each user authorized_keys file
 			cat "/home/$users/.ssh/id_rsa.pub" | sudo -u "$users" tee -a "/home/$users/.ssh/authorized_keys" >/dev/null
 			cat "/home/$users/.ssh/id_ed25519.pub" | sudo -u "$users" tee -a "/home/$users/.ssh/authorized_keys" >/dev/null
 		else
-			echo "User $users does not exist." 
-		fi
-	done
+			echo "User $users does not exist."
 
