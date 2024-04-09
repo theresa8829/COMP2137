@@ -8,8 +8,13 @@
 
 # * * * * * * * * * * * * * * * * * * * * * *
 
-# This section of code is creating a log file for error, warning, progress messages/logs
+# Set default values for command line arguments
+	verbose=false
+	name=""
+	ip=""
+	host_entry=""
 
+# This section of code is creating a log file for error, warning, progress messages/logs
 	# Specify log file
 	log_file="scriptlogs.txt"
 	
@@ -18,6 +23,58 @@
     		local message="$1"
     		echo "$(date +"%Y-%m-%d %H:%M:%S") - $message" >> "$log_file"
 	}
+
+# This function will display usage information
+	display_usage() {
+    		echo "Usage: $0 [-verbose] [-name <name>] [-ip <ip_address>] [-hostentry <host_entry>]"
+    		echo "Options:"
+    		echo "  -verbose            Enable verbose mode"
+    		echo "  -name <name>        Specify the name"
+    		echo "  -ip <ip_address>    Specify the IP address"
+    		echo "  -hostentry <host_entry> Specify the host entry"
+    		exit 1
+	}
+
+# This section of code will parse the given command line options 
+	while [[ "$#" -gt 0 ]]; do
+    	    case $1 in
+                -verbose)
+                    verbose=true
+                    ;;
+                -name)
+                    name="$2"
+            	    shift
+            	    ;;
+        	-ip)
+            	    ip="$2"
+            	    shift
+            	    ;;
+        	-hostentry)
+            	    host_entry="$2"
+            	    shift
+            	    ;;
+        	*)
+            	    echo "Unknown option: $1" >&2
+            	    display_usage
+            	    ;;
+    	    esac
+    	    shift
+	done
+
+# This section of code will check if the required arguments were given
+	if [ -z "$name" ] || [ -z "$ip" ] || [ -z "$host_entry" ]; then
+    	    echo "Error: Missing required arguments."
+    	    display_usage
+	fi
+
+# This section of code will provide output based on verbose
+	if [ "$verbose" = true ]; then
+            echo "Name: $name"
+            echo "IP Address: $ip"
+            echo "Host Entry: $host_entry"
+	else
+            echo "Information processed."
+	fi
 
 # This section of code allows choices on the command line
 	while [ $# -gt 0 ]; do
