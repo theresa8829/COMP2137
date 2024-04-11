@@ -1,0 +1,32 @@
+- name: apache2, firewall, ssh, http
+  hosts: target1-mgmt
+  remote_user: remoteadmin
+  tasks:
+    - name: apache2 package install
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+        
+    - name: enable apache2
+      systemd:
+        name: apache2
+        enabled: yes
+        state: started
+        
+    - name: enable ufw
+      apt: 
+        name: ufw
+        state: present
+        
+    - name: allow ssh
+      ufw: 
+        rule: allow
+        port: 22
+        proto: tcp
+     
+    - name: allow http
+      ufw:
+        rule: allow
+        port: 80
+        proto: tcp
