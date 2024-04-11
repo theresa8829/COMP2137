@@ -14,11 +14,14 @@
 	ip=""
 	host_entry=""
 
+# This section of code is ignoring TERM, HUP, and INT signals during script
+	trap '' TERM HUP INT
+
 # This section of code is creating a log file for error, warning, progress messages/logs
 	# Specify log file
 	log_file="scriptlogs.txt"
 	
-	# Function to log the messages with date and time
+	# Function to log the messages with date and time and append to log_file
 	log_message() {
     		local message="$1"
     		echo "$(date +"%Y-%m-%d %H:%M:%S") - $message" >> "$log_file"
@@ -84,19 +87,13 @@
 # This function will run the script in verbose mode
 	function echoverbose {
     		[ "$verbose" = "yes" ] && echo "$@"
-	}
+	}	
 
-# This section of code will collect hostname from command-line argument
-	hostname_to_collect="$1"
-
-	hostname = sys. argv[1] 
-
-
-
-
-	
-	
-	
+# This section of code is to keep trap script running while configure script runs, and test if it works
+	echo "Configure Host script has begun. Try pressing Ctrl+C to attempt to interrupt script."
+	while true; do
+	    sleep 1
+	done
 	
 	
 	
